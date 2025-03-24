@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Chatbot & Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #e8f5e9; color: #2e7d32; }
+        #chatbox, #dashboard { width: 50%; margin: auto; padding: 20px; border-radius: 10px; background: #ffffff; box-shadow: 0px 4px 10px rgba(0, 128, 0, 0.2); }
+        h2 { color: #1b5e20; }
+        input { width: 80%; padding: 10px; margin: 10px 0; border: 1px solid #81c784; border-radius: 5px; }
+        button { background-color: #2e7d32; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; margin: 5px; }
+        button:hover { background-color: #1b5e20; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #66bb6a; padding: 10px; text-align: center; }
+        th { background-color: #43a047; color: white; }
+        .pass { background-color: #c8e6c9; }
+        .fail { background-color: #ffcdd2; }
+    </style>
+</head>
+<body>
+    <h2>Mini Chatbot</h2>
+    <div id="chatbox">
+        <p>Bot: Hello! Please enter your details.</p>
+        <p>Bot: What is your name?</p>
+        <input type="text" id="name" placeholder="Your Name" />
+        <button onclick="nextStep(1)">Next</button>
+    </div>
+    
+    <div id="dashboard" style="display: none;">
+        <h2>Saved Forms Dashboard</h2>
+        <button onclick="clearData()">Clear All Data</button>
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Standard</th>
+                    <th>Enrollment No</th>
+                    <th>Subject</th>
+                    <th>Marks</th>
+                    <th>Result</th>
+                </tr>
+            </thead>
+            <tbody id="data-table"></tbody>
+        </table>
+    </div>
+
+    <script>
+        let userData = {};
+        function nextStep(step) {
+            if (step === 1) {
+                userData.name = document.getElementById("name").value;
+                document.getElementById("chatbox").innerHTML = `<p>Bot: What is your standard (STD)?</p>
+                <input type='text' id='std' placeholder='Your STD' />
+                <button onclick='nextStep(2)'>Next</button>`;
+            } else if (step === 2) {
+                userData.std = document.getElementById("std").value;
+                document.getElementById("chatbox").innerHTML = `<p>Bot: What is your enrollment number?</p>
+                <input type='text' id='enroll' placeholder='Enrollment No' />
+                <button onclick='nextStep(3)'>Next</button>`;
+            } else if (step === 3) {
+                userData.enroll = document.getElementById("enroll").value;
+                document.getElementById("chatbox").innerHTML = `<p>Bot: Enter your subject name:</p>
+                <input type='text' id='subject' placeholder='Subject' />
+                <button onclick='nextStep(4)'>Next</button>`;
+            } else if (step === 4) {
+                userData.subject = document.getElementById("subject").value;
+                document.getElementById("chatbox").innerHTML = `<p>Bot: Enter your marks:</p>
+                <input type='number' id='marks' placeholder='Marks' />
+                <button onclick='saveData()'>Submit</button>`;
+            }
+        }
+        
+        function saveData() {
+            userData.marks = parseInt(document.getElementById("marks").value);
+            userData.result = userData.marks > 50 ? "Pass" : "Fail";
+            let savedData = JSON.parse(localStorage.getItem("formData")) || [];
+            savedData.push(userData);
+            localStorage.setItem("formData", JSON.stringify(savedData));
+            alert("Your details have been saved!");
+            showDashboard();
+        }
+
+        function showDashboard() {
+            document.getElementById("chatbox").style.display = "none";
+            document.getElementById("dashboard").style.display = "block";
+            loadData();
+        }
+
+        function loadData() {
+            let savedData = JSON.parse(localStorage.getItem("formData")) || [];
+            let tableBody = document.getElementById("data-table");
+            tableBody.innerHTML = "";
+            savedData.forEach(data => {
+                let resultClass = data.result === "Pass" ? "pass" : "fail";
+                let row = `<tr class='${resultClass}'>
+                    <td>${data.name}</td>
+                    <td>${data.std}</td>
+                    <td>${data.enroll}</td>
+                    <td>${data.subject}</td>
+                    <td>${data.marks}</td>
+                    <td>${data.result}</td>
+                </tr>`;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        function clearData() {
+            if (confirm("Are you sure you want to clear all saved data?")) {
+                localStorage.removeItem("formData");
+                alert("All data has been cleared!");
+                loadData();
+            }
+        }
+    </script>
+</body>
+</html>
